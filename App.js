@@ -4,55 +4,48 @@
  * @flow
  */
 
-import React, { Component } from 'react';
-import {
-  Platform,
-  StyleSheet,
-  Text,
-  View
-} from 'react-native';
+import React, { Component } from "react";
+import { Platform, StyleSheet, Text, View } from "react-native";
+import { createStore, applyMiddleware } from "redux";
+import { Provider, connect } from "react-redux";
+import axios from "axios";
+import axiosMiddleware from "redux-axios-middleware";
+import reducer from "./reducers";
+import GistList from "./components/gistList";
+import UserSet from "./components/userSet";
+import GistShow from "./components/gistShow";
+import GistFileList from "./components/gistFileList";
 
-const instructions = Platform.select({
-  ios: 'Press Cmd+R to reload,\n' +
-    'Cmd+D or shake for dev menu',
-  android: 'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu',
+import { createStackNavigator } from "react-navigation";
+
+const client = axios.create({
+  baseURL: "https://api.github.com",
+  responseType: "json"
 });
 
-type Props = {};
-export default class App extends Component<Props> {
+const Stack = createStackNavigator({
+  Home: {
+    screen: UserSet
+  },
+  List: {
+    screen: GistList
+  },
+  FileList: {
+    screen: GistFileList
+  },
+  Show: {
+    screen: GistShow
+  }
+});
+
+const store = createStore(reducer, applyMiddleware(axiosMiddleware(client)));
+
+export default class App extends Component {
   render() {
     return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit App.js
-        </Text>
-        <Text style={styles.instructions}>
-          {instructions}
-        </Text>
-      </View>
+      <Provider store={store}>
+        <Stack />
+      </Provider>
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-});
